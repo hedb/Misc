@@ -24,6 +24,23 @@ if(typeof(String.prototype.trim) === "undefined")
 
 
 
+inner_page_context_script = function() {
+	s1 = "x";
+	s2 = "y";
+	alert ( s1 + gapi.toString() + s2 );
+}
+
+
+function loading_script_to_page_context() {
+
+	var script = document.createElement('script');
+	script.type= 'text/javascript';
+	function_str = "f1 = " + inner_page_context_script.toString() + "; f1(); "
+	script.innerHTML = function_str
+	document.head.appendChild(script); //or something of the likes
+
+}
+
 
   function load_G_API(continueFunc) {
 	console.log("[load_G_API]");
@@ -35,6 +52,9 @@ if(typeof(String.prototype.trim) === "undefined")
 	var script = document.createElement('script');
 	script.onload = function () {
 			console.log("[api.js script.onload]");
+
+			loading_script_to_page_context()
+
 			try {
 				//debugger
 					gapi.load('client:auth2',
@@ -61,6 +81,10 @@ if(typeof(String.prototype.trim) === "undefined")
 	};
 	script.src = 'https://apis.google.com/js/api.js';
 	document.head.appendChild(script); //or something of the likes
+
+
+
+
   }
 
   /**
@@ -224,7 +248,11 @@ function upload_collected_domains(searched_host,domains) {
 
 
 
+
+
+
 function init() {
+
 	//debugger
 	console.log("[init]");
 	try {

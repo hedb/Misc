@@ -4,10 +4,22 @@
 
 	<head>
 		<meta charset="utf-8" />
+
+		<script>
+		function test_scope() {
+			var t = window.gapi;
+		}
+		</script>
+
+
 	</head>
 
 	<body>
 		test
+
+		<br/>
+		<a id='click_anchor' href="javascript:test_scope()">click here</a>
+
 	</body>
 
 </html>
