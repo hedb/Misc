@@ -1,0 +1,20 @@
+{
+
+  "description": "",
+  "manifest_version": 2,
+  "name": "Search DNS",
+  "version": "1.0",
+  "homepage_url": "https://github.com/",
+  "icons": {
+    "48": "icons/tmp.png"
+  },
+
+  "content_scripts": [
+    {
+      //"matches": ["https://searchdns.netcraft.com/*"],
+      "matches": ["http://www.localhost.com/*"],
+      "js": ["searchdns.js"]
+    }
+  ]
+
+}
