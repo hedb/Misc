@@ -11,6 +11,15 @@ if(typeof(String.prototype.trim) === "undefined")
 
 
 
+
+
+
+
+
+var load_G_API_1 = function() {
+	console.log("[load_G_API_1]");
+
+
   // Client ID and API key from the Developer Console
   var CLIENT_ID = '762002553531-vcte9ok5tgbhrt9v53626o20rovi5e1u.apps.googleusercontent.com';
   var API_KEY = 'AIzaSyB2pSwubu0w8pk2OJPCkseRFJAhhIiue_I';
@@ -22,100 +31,7 @@ if(typeof(String.prototype.trim) === "undefined")
   // included, separated by spaces.
   var SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
-
-
-inner_page_context_script = function() {
-	s1 = "x";
-	s2 = "y";
-	alert ( s1 + gapi.toString() + s2 );
-}
-
-
-function loading_script_to_page_context() {
-
-	var script = document.createElement('script');
-	script.type= 'text/javascript';
-	function_str = "f1 = " + inner_page_context_script.toString() + "; f1(); "
-	script.innerHTML = function_str
-	document.head.appendChild(script); //or something of the likes
-
-}
-
-
-  function load_G_API(continueFunc) {
-	console.log("[load_G_API]");
-
-// Issue :
-//	https://stackoverflow.com/questions/29433744/gapi-is-not-defined
-//	https://stackoverflow.com/questions/41012489/using-gmail-api-in-chrome-extension-in-content-scripts
-
-	var script = document.createElement('script');
-	script.onload = function () {
-			console.log("[api.js script.onload]");
-
-			loading_script_to_page_context()
-
-			try {
-				//debugger
-					gapi.load('client:auth2',
-							{
-								'callback' : function(obj) {
-						//debugger
-									try {
-										initClient(continueFunc);
-									}
-									catch (err) {
-										console.log(err)
-									}
-								},
-							'onerror': function(obj) {
-						debugger
-								console.log(obj)
-							}
-						}
-					);
-				}
-				catch (err) {
-					console.log(err);
-		}
-	};
-	script.src = 'https://apis.google.com/js/api.js';
-	document.head.appendChild(script); //or something of the likes
-
-
-
-
-  }
-
-  /**
-   *  Initializes the API client library and sets up sign-in state
-   *  listeners.
-   */
-  function initClient(continueFunc) {
-	console.log("[initClient]");
-
-	gapi.client.init({
-	  apiKey: API_KEY,
-	  clientId: CLIENT_ID,
-	  discoveryDocs: DISCOVERY_DOCS,
-	  scope: SCOPES
-	}).then(function () {
-	  // Listen for sign-in state changes.
-	  gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-	  // Handle the initial sign-in state.
-	  updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-
-	  continueFunc();
-
-	}, function(error) {
-	  console.log(JSON.stringify(error, null, 2));
-	});
-  }
-
-
-
-  function updateSigninStatus(isSignedIn) {
+updateSigninStatus = function (isSignedIn) {
 	console.log("[updateSigninStatus] isSignedIn=" + isSignedIn);
 
 	if (isSignedIn) {
@@ -123,30 +39,10 @@ function loading_script_to_page_context() {
 		console.log("[updateSigninStatus] Signing In");
 		gapi.auth2.getAuthInstance().signIn();
 	}
-  }
-
-
-
-
-
-
-
-function get_next_link() {
-	var ret = null;
-	//debugger
-
-	if (document.getElementsByClassName("blogbody")[1]) {
-		var link_list = document.getElementsByClassName("blogbody")[1].getElementsByTagName('a');
-		var candidate_link = link_list[link_list.length-1]
-		if (candidate_link.href.startsWith('https://searchdns.netcraft.com/?host=')) {
-			ret = candidate_link;
-		}
-	}
-	return ret;
 }
 
-// not visible to the page. just for copying its text
-function fetch_all_domains_and_set_to_local_storage() {
+
+fetch_all_domains_and_set_to_local_storage = function () {
 	console.log("[fetch_all_domains_and_set_to_local_storage]");
 	element_names = ["TBtr","TBtr2"]
 	var all_domain_str = ''
@@ -171,11 +67,26 @@ function fetch_all_domains_and_set_to_local_storage() {
 }
 
 
-function upload_collected_domains(searched_host,domains) {
+get_next_link = function () {
+	var ret = null;
+	//debugger
+
+	if (document.getElementsByClassName("blogbody")[1]) {
+		var link_list = document.getElementsByClassName("blogbody")[1].getElementsByTagName('a');
+		var candidate_link = link_list[link_list.length-1]
+		if (candidate_link.href.startsWith('https://searchdns.netcraft.com/?host=')) {
+			ret = candidate_link;
+		}
+	}
+	return ret;
+}
+
+
+upload_collected_domains = function (searched_host,domains) {
 	var debug = false
 	if (debug) {
 		domains = 'www.google.com\nwww1.google.com'
-		searched_host = 'google7.com'
+		searched_host = 'google8.com'
 	}
 	console.log(domains)
 	if (domains != null && domains.trim().length > 0) {
@@ -249,6 +160,132 @@ function upload_collected_domains(searched_host,domains) {
 
 
 
+	load_G_API_3 = function() {
+		//debugger
+		console.log("[load_G_API_3]");
+		try {
+
+			console.log("[init] Searching for results");
+			fetch_all_domains_and_set_to_local_storage()
+
+			next_link = get_next_link();
+			if (next_link == null) {
+			//if (true) {
+				console.log("[init] We're either before search or last page of search \n uploading existing list and cleaning local storage");
+
+				searched_host = ( document.getElementsByName('host').length > 0  ? document.getElementsByName('host')[0].value : "");
+				upload_collected_domains(searched_host,window.localStorage.getItem("domain_list"))
+
+				// clear local storage
+				window.localStorage.setItem("domain_list","")
+			} else {
+				console.log("[init] clicking on next page in 3 sec");
+				setTimeout(function(){  next_link.click() }, 3000);
+
+			}
+
+		}
+		catch (err) {
+			console.log(err)
+		}
+	}
+
+
+	load_G_API_2 = function() {
+			console.log("[load_G_API_2]");
+
+			gapi.client.init({
+			  apiKey: API_KEY,
+			  clientId: CLIENT_ID,
+			  discoveryDocs: DISCOVERY_DOCS,
+			  scope: SCOPES
+			}).then(function () {
+			  // Listen for sign-in state changes.
+			  gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+			  // Handle the initial sign-in state.
+			  updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+
+			  load_G_API_3();
+
+			}, function(error) {
+			  console.log(JSON.stringify(error, null, 2));
+			});
+
+	}
+
+	try {
+		//debugger
+			gapi.load('client:auth2',
+					{
+						'callback' : function(obj) {
+				//debugger
+							try {
+								load_G_API_2();
+							}
+							catch (err) {
+								console.log(err)
+							}
+						},
+					'onerror': function(obj) {
+				debugger
+						console.log(obj)
+					}
+				}
+			);
+		}
+		catch (err) {
+			console.log(err);
+	}
+}
+
+
+function loading_script_to_page_context(func) {
+
+	var script = document.createElement('script');
+	script.type= 'text/javascript';
+	function_str = "f1 = " + func.toString() + "; f1(); "
+	script.innerHTML = function_str
+	document.head.appendChild(script); //or something of the likes
+
+}
+
+
+
+function load_G_API() {
+	console.log("[load_G_API]");
+
+// Issue :
+//	https://stackoverflow.com/questions/29433744/gapi-is-not-defined
+//	https://stackoverflow.com/questions/41012489/using-gmail-api-in-chrome-extension-in-content-scripts
+
+	var script = document.createElement('script');
+	script.onload = function () {
+			console.log("[api.js script.onload]");
+
+			loading_script_to_page_context(load_G_API_1)
+			//load_G_API_1()
+
+	};
+	script.src = 'https://apis.google.com/js/api.js';
+	document.head.appendChild(script); //or something of the likes
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function init() {
@@ -268,7 +305,7 @@ function init() {
 				document.getElementById("hidethisdiv").parentElement.prepend(notification);
 			}
 
-			load_G_API(init_after_G_API_Loaded);
+			load_G_API();
 
 		}
 		else {
@@ -281,35 +318,6 @@ function init() {
 }
 
 
-function init_after_G_API_Loaded() {
-	//debugger
-	console.log("[init_after_G_API_Loaded]");
-	try {
-
-		console.log("[init] Searching for results");
-		fetch_all_domains_and_set_to_local_storage()
-
-		next_link = get_next_link();
-		if (next_link == null) {
-		//if (true) {
-			console.log("[init] We're either before search or last page of search \n uploading existing list and cleaning local storage");
-
-			searched_host = ( document.getElementsByName('host').length > 0  ? document.getElementsByName('host')[0].value : "");
-			upload_collected_domains(searched_host,window.localStorage.getItem("domain_list"))
-
-			// clear local storage
-			window.localStorage.setItem("domain_list","")
-		} else {
-			console.log("[init] clicking on next page in 3 sec");
-			setTimeout(function(){  next_link.click() }, 3000);
-
-		}
-
-	}
-	catch (err) {
-		console.log(err)
-	}
-}
 
 
 if (document.readyState == 'complete') {

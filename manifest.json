@@ -11,8 +11,8 @@
 
   "content_scripts": [
     {
-      //"matches": ["https://searchdns.netcraft.com/*"],
-      "matches": ["http://www.localhost.com/*"],
+      "matches": ["https://searchdns.netcraft.com/*"],
+      //"matches": ["http://www.localhost.com/ff_ext1/tmp_search_dns.html"],
       "js": ["searchdns.js"]
     }
   ]
